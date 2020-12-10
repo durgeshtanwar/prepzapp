@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_pro/carousel_pro.dart';
 import 'package:flutter/rendering.dart';
+import 'package:http/http.dart' as http;
+import 'dart:async';
+import 'dart:convert';
 
 void main() {
   runApp(MaterialApp(
@@ -18,6 +21,33 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  String stringResponce;
+  List listResponse;
+  Future fetchData() async {
+    String username = 'admin';
+    String password = '1234';
+    String basicAuth =
+        'Basic ' + base64Encode(utf8.encode('$username:$password'));
+    print(basicAuth);
+
+    http.Response res;
+    res = await http.get(
+        'http://prepzapp.com/api_v1/api/categories?X-API-KEY=Arshu@%23123',
+        headers: <String, String>{'authorization': basicAuth});
+    if (res.statusCode == 200) {
+      setState(() {
+        listResponse = json.decode(res.body);
+      });
+    }
+    print(res.body);
+  }
+
+  @override
+  void initState() {
+    fetchData();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,102 +113,43 @@ class _MyAppState extends State<MyApp> {
                 style: TextStyle(fontFamily: 'Archivo Black'),
               ),
             ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Card(
-                        elevation: 3,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                                colors: [
-                                  Colors.red,
-                                  Colors.yellow,
-                                  Colors.teal
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight),
-                          ),
-                          child: ListTile(
-                            leading: Icon(
-                              Icons.sanitizer,
-                              size: 36,
-                              color: Colors.white,
-                            ),
-                            title: Text('SSC Exam'),
-                            subtitle: Text("4 September"),
-                          ),
-                        )),
-                  ),
-                  Expanded(
-                    child: Card(
-                      child: Container(
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(colors: [
-                          Colors.red,
-                          Colors.yellow,
-                          Colors.amber
-                        ])),
-                        child: ListTile(
-                          leading: Icon(Icons.sanitizer),
-                          title: Text('SSC Exam'),
-                          subtitle: Text("Indian People"),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            Upper_cards(),
             Container(
               padding: EdgeInsets.only(left: 10.0),
               margin: EdgeInsets.only(top: 10.0, bottom: 10.0),
               child: Text(
-                'Upcoming Tests',
+                'Categories',
                 textAlign: TextAlign.left,
                 style: TextStyle(fontFamily: 'Archivo Black'),
               ),
             ),
             Column(
               children: [
-                Card(
-                  elevation: 5,
-                  margin: EdgeInsets.all(8),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.all(8),
-                    leading: Image.network(
-                        'https://www.sentinelassam.com/wp-content/uploads/2019/05/goii.jpg'),
-                    title: Text('SSC Exam'),
-                    subtitle: Text('4 Dec 2021'),
-                    trailing: Icon(Icons.edit),
-                  ),
-                ),
-                Card(
-                  elevation: 5,
-                  margin: EdgeInsets.all(8),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.all(8),
-                    leading: Image.network(
-                        'https://www.sentinelassam.com/wp-content/uploads/2019/05/goii.jpg'),
-                    title: Text('SSC Exam'),
-                    subtitle: Text('4 Dec 2021'),
-                    trailing: Icon(Icons.edit),
-                  ),
-                ),
-                Card(
-                  elevation: 5,
-                  margin: EdgeInsets.all(8),
-                  child: ListTile(
-                    contentPadding: EdgeInsets.all(8),
-                    leading: Image.network(
-                        'https://www.sentinelassam.com/wp-content/uploads/2019/05/goii.jpg'),
-                    title: Text('SSC Exam'),
-                    subtitle: Text('4 Dec 2021'),
-                    trailing: Icon(Icons.edit),
-                  ),
-                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return Column(
+                      children: [
+                        Card(
+                          elevation: 5,
+                          margin: EdgeInsets.all(8),
+                          child: ListTile(
+                            leading: Image.network(
+                                'https://www.sentinelassam.com/wp-content/uploads/2019/05/goii.jpg'),
+                            title: Text(listResponse[index]['category_name']),
+                            subtitle:
+                                Text(listResponse[index]['category_name_hi']),
+                            trailing: IconButton(
+                                onPressed: () {},
+                                icon: Icon(Icons.edit),
+                                color: Colors.black),
+                          ),
+                        )
+                      ],
+                    );
+                  },
+                  itemCount: listResponse == null ? 0 : listResponse.length,
+                )
               ],
             )
           ],
@@ -246,6 +217,55 @@ class _MyAppState extends State<MyApp> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class Upper_cards extends StatelessWidget {
+  const Upper_cards({
+    Key key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Card(
+              elevation: 3,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: [Colors.red, Colors.yellow, Colors.teal],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight),
+                ),
+                child: ListTile(
+                  leading: Icon(
+                    Icons.sanitizer,
+                    size: 36,
+                    color: Colors.white,
+                  ),
+                  title: Text('SSC Exam'),
+                  subtitle: Text("4 September"),
+                ),
+              )),
+        ),
+        Expanded(
+          child: Card(
+            child: Container(
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      colors: [Colors.red, Colors.yellow, Colors.amber])),
+              child: ListTile(
+                leading: Icon(Icons.sanitizer),
+                title: Text('SSC Exam'),
+                subtitle: Text("Indian People"),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
